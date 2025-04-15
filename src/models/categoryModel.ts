@@ -4,31 +4,31 @@ import { SHOW_DELETED_OPTIONS } from '../constants.js';
 /**
  * Tüm kategorileri getirir, silinmişleri dahil etmek için filtre uygular
  */
-export const getAllCategories = async (showDeleted: string) => {
-    return await prisma.category.findMany({
-        where:
-            showDeleted === SHOW_DELETED_OPTIONS.ONLY_DELETED
-                ? { deleted_at: { not: null } } // Sadece silinmişleri getir
-                : showDeleted !== SHOW_DELETED_OPTIONS.ALL
-                ? { deleted_at: null } // Sadece aktifleri getir
-                : undefined, // Hepsini getir
-    });
+export const getAllCategories = (showDeleted: string) => {
+    return prisma.category.findMany(
+            {
+            where:
+                showDeleted === SHOW_DELETED_OPTIONS.ONLY_DELETED
+                    ? { deleted_at: { not: null } } // Sadece silinmişleri getir
+                    : showDeleted !== SHOW_DELETED_OPTIONS.ALL
+                    ? { deleted_at: null } // Sadece aktifleri getir
+                    : undefined, // Hepsini getir
+        }
+    );
 };
 
 /**
  * Belirli bir ID'ye sahip kategoriyi getirir
  */
-export const getCategoryById = async (id: number) => {
-    return await prisma.category.findUnique({
-        where: { id, deleted_at: null },
-    });
+export const getCategoryById =  (id: number) => {
+    return  prisma.category.findUnique({ where: { id }, });
 };
 
 /**
  * Yeni bir kategori oluşturur
  */
-export const createCategory = async (data: { name: string }) => {
-    return await prisma.category.create({
+export const createCategory =  (data: { name: string }) => {
+    return  prisma.category.create({
         data,
     });
 };
@@ -36,8 +36,8 @@ export const createCategory = async (data: { name: string }) => {
 /**
  * Belirli bir kategoriyi günceller
  */
-export const updateCategory = async (id: number, data: { name: string }) => {
-    return await prisma.category.update({
+export const updateCategory =  (id: number, data: { name: string }) => {
+    return  prisma.category.update({
         where: { id },
         data,
     });
@@ -46,9 +46,10 @@ export const updateCategory = async (id: number, data: { name: string }) => {
 /**
  * Belirli bir kategoriyi soft delete olarak işaretler
  */
-export const deleteCategory = async (id: number) => {
-    return await prisma.category.update({
+export const deleteCategory =  (id: number) => {
+    return  prisma.category.update({
         where: { id },
         data: { deleted_at: new Date() },
     });
 };
+

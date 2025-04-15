@@ -1,4 +1,23 @@
-// Mevcut Post ve Tag modellerini güncelliyoruz
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  created_at  DateTime  @default(now())
+  deleted_at  DateTime? 
+
+  posts       Post[]
+
+  @@map("categories") // PostgreSQL'de çoğul snake_case
+}
+
 model Post {
   id           Int       @id @default(autoincrement())
   category_id  Int
@@ -10,18 +29,30 @@ model Post {
 
   category     Category  @relation(fields: [category_id], references: [id])
   comments     Comment[]
-  tags         PostTag[] // Değişiklik burada
+  tags         PostTag[]
 
-  @@map("posts")
+  @@map("posts") // PostgreSQL'de çoğul snake_case
+}
+
+model Comment {
+  id             Int      @id @default(autoincrement())
+  post_id        Int
+  content        String
+  commenter_name String
+  created_at     DateTime @default(now())
+
+  post           Post     @relation(fields: [post_id], references: [id])
+
+  @@map("comments") // PostgreSQL'de çoğul snake_case
 }
 
 model Tag {
   id   Int    @id @default(autoincrement())
   name String
 
-  posts PostTag[] // Değişiklik burada
+  posts PostTag[]
 
-  @@map("tags")
+  @@map("tags") // PostgreSQL'de çoğul snake_case
 }
 
 // Yeni junction model ekliyoruz
