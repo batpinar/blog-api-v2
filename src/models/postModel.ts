@@ -1,21 +1,33 @@
 import prisma from '../config/database.js';
 import { SHOW_DELETED_OPTIONS, POST_STATUS } from '../constants.js';
 
-export const getAllPosts =  (showDeleted?: string, status?: string, category?: number) => {
-    return  prisma.post.findMany({
-        where: {
-            category_id: category || undefined, // Belirtilen kategoriye göre filtrele
-            deleted_at: showDeleted === SHOW_DELETED_OPTIONS.ONLY_DELETED
-                ? { not: null } // Silinmiş kayıtları getir
-                : showDeleted !== SHOW_DELETED_OPTIONS.ALL
-                ? null // Silinmemiş kayıtları getir
-                : undefined,
-            published_at: status === POST_STATUS.PUBLISHED
-                ? { not: null } // Yayınlanmış postları getir
-                : status === POST_STATUS.DRAFT
-                ? null // Taslak postları getir
-                : undefined,
-        },
+export const getAllPosts = (showDeleted?: string, status?: string, category?: number, tags?: string) => {
+    const queryList: any[] = []
+
+    if (category) {
+        queryList.push({ category_id: category }) 
+    }
+
+    if (showDeleted === SHOW_DELETED_OPTIONS.ONLY_DELETED) {
+        queryList.push({ deleted_at: { not: null } });
+    } else if (showDeleted !== SHOW_DELETED_OPTIONS.ALL) {
+        queryList.push({ deleted_at: null });
+    }
+
+    if (status === POST_STATUS.PUBLISHED) {
+        queryList.push({ published_at: { not: null } });
+    } else if (status === POST_STATUS.DRAFT) {
+        queryList.push({ published_at: null });
+    }
+
+    if (tags) {
+        const tagIds = tags.split(',').map(id => Number(id));
+        queryList.push({ tags: { some: { tag_id: { in: tagIds } } } });
+    }
+    return prisma.post.findMany({
+        where:{
+            AND: queryList
+        }
     });
 };
 
